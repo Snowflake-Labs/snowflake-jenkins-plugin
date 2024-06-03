@@ -1,28 +1,79 @@
-# ConfigureSnowflakeCLI
+# Snowflake CLI Plugin
 
-## Introduction
+## About this Plugin
 
-TODO Describe what your plugin does here
+The Snowflake CLI Plugin for [Jenkins](https://jenkins.io) provides an installer for [Snowflake CLI](https://docs.snowflake.com/en/developer-guide/snowflake-cli-v2/index) and a build wrapper for setting the Snowflake configuration file.
 
-## Getting started
+## Functionality
 
-TODO Tell users how to configure your plugin here, include screenshots, pipeline examples and 
-configuration-as-code examples.
+During a build, this plugin can:
+- Install a specific version of Snowflake CLI on the agent.
+- Add the executable path to the agent's PATH variable.
+- Create a temporary directory for storing the configuration file and scripts.
+- Export the `SNOWFLAKE_HOME` environment variable pointing to the temporary directory.
 
-## Issues
+### Global Configuration
 
-TODO Decide where you're going to host your issues, the default is Jenkins JIRA, but you can also enable GitHub issues,
-If you use GitHub issues there's no need for this section; else add the following line:
+1. In the System Configuration (_Manage Jenkins > System Configuration > Tools_), find the "Snowflake CLI Installations" section, and click "Add Snowflake CLI."
+2. Enter a label, e.g., "latest" — this label is used in Pipelines or displayed during Freestyle job configuration.
+3. Enter the desired version to be installed or specify another installation method.
 
-Report issues and enhancements in the [Jenkins issue tracker](https://issues.jenkins.io/).
+### Per-Job Configuration
 
-## Contributing
+#### Declarative Pipeline
 
-TODO review the default [CONTRIBUTING](https://github.com/jenkinsci/.github/blob/master/CONTRIBUTING.md) file and make sure it is appropriate for your plugin, if not then add your own one adapted from the base file
+Use the [`tools` directive](https://www.jenkins.io/doc/book/pipeline/syntax/#tools) within any `pipeline` or `stage`. For example:
 
-Refer to our [contribution guidelines](https://github.com/jenkinsci/.github/blob/master/CONTRIBUTING.md)
+```groovy
+pipeline {
+  // Run on an agent where we want to use Snowflake CLI
+  agent any
 
-## LICENSE
+  // Ensure the desired Snowflake CLI version is installed for all stages,
+  // using the name defined in the Global Tool Configuration
+  tools { snowflakecli 'latest' }
 
-Licensed under MIT, see [LICENSE](LICENSE.md)
+  stages {
+    stage('Build') {
+      steps {
+        script {
+          // Use a wrap directive, set $class as SnowflakeCLIBuildWrapper and add the parameter for the path to the configuration file in your repository.
+          // This wrapper copies the information of the input file and stores it to a temporal config.toml file.
+          wrap([$class: 'SnowflakeCLIBuildWrapper', configFilePath: 'config.toml']) {
+              sh 'snow connection list'
+          }
+        }
+      }
+    }
+  }
+```
 
+#### Scripted Pipeline
+
+```groovy
+// Run on an agent where we want to use Go
+node {
+    // Ensure the desired Snowflake CLI version is installed for all stages,
+    // using the name defined in the Global Tool Configuration
+    def root = tool type: 'snowflakecli', name: 'latest'
+
+          // Use a wrap directive, set $class as SnowflakeCLIBuildWrapper and add the parameter for the path to the configuration file in your repository.
+          // This wrapper copies the information of the input file and stores it to a temporal config.toml file.
+    wrap([$class: 'SnowflakeCLIBuildWrapper', configFilePath: 'config.toml']) {
+        sh 'snow connection list'
+    }
+}
+```
+
+#### Freestyle
+
+1. In a job's configuration, find the "Build environment" section.
+2. Select the "Install Snowflake CLI" checkbox.
+3. Select the name of a Snowflake installation from the drop-down.
+4. Choose inline or file mode:
+   1. For file mode, enter the path to the `config.toml`.
+   2. For inline mode, enter the `config.toml` text.
+
+## License
+
+Licensed under the Apache License. See [LICENSE](LICENSE.md) for details.
