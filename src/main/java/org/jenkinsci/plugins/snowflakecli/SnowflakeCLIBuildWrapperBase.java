@@ -1,23 +1,14 @@
 package org.jenkinsci.plugins.snowflakecli;
 
-import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.*;
 
 import hudson.model.*;
 
-import hudson.tasks.BuildWrapper;
-import hudson.tasks.BuildWrapperDescriptor;
 import jenkins.tasks.SimpleBuildWrapper;
-import org.kohsuke.stapler.DataBoundSetter;
 
 import java.io.*;
 
-import java.util.logging.Logger;
-
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
-
-public abstract class SnowflakeBuildWrapperBase extends SimpleBuildWrapper {
+public abstract class SnowflakeCLIBuildWrapperBase extends SimpleBuildWrapper {
     
     public String copyConfigFile(FilePath sourceFile, FilePath destinationFile) {
         return "mv \"" + sourceFile.getRemote() + "\" \"" + destinationFile.getRemote() + "\"\n" +
@@ -26,7 +17,7 @@ public abstract class SnowflakeBuildWrapperBase extends SimpleBuildWrapper {
     
     public FilePath setupSnowflakeHome(FilePath workspace, final Launcher launcher, final TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException {
         listener.getLogger().println("Creating temporal Snowflake home directory");
-        FilePath workspacePath  = workspace.createTempDir("snowflake", "home");
+        FilePath workspacePath  = workspace.createTempDir(".snowflake", "home");
         FilePath oldConfigFile = this.getTemporalConfigurationFile(workspace, initialEnvironment, listener);
         FilePath configurationFile = new FilePath(workspacePath, "config.toml");
         FilePath script = workspacePath.createTextTempFile("setConfigFile", ".sh", this.copyConfigFile(oldConfigFile, configurationFile));

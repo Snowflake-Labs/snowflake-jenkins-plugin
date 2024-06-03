@@ -49,7 +49,7 @@ public class SnowflakeInstallation extends ToolInstallation implements Environme
 
         @Override
         public String getDisplayName() {
-            return "Snowflake";
+            return "Snowflake CLI";
         }
 
         @Override
@@ -60,14 +60,14 @@ public class SnowflakeInstallation extends ToolInstallation implements Environme
         @Override
         public SnowflakeInstallation[] getInstallations() {
             return Jenkins.getActiveInstance()
-                    .getDescriptorByType(SnowflakeFreeStyleBuildWrapper.SnowflakeFreeStyleDescriptor.class)
+                    .getDescriptorByType(SnowflakeCLIFreeStyleBuildWrapper.SnowflakeFreeStyleDescriptor.class)
                     .getInstallations();
         }
 
         @Override
         public void setInstallations(SnowflakeInstallation... installations) {
             Jenkins.getActiveInstance()
-                    .getDescriptorByType(SnowflakeFreeStyleBuildWrapper.SnowflakeFreeStyleDescriptor.class)
+                    .getDescriptorByType(SnowflakeCLIFreeStyleBuildWrapper.SnowflakeFreeStyleDescriptor.class)
                     .setInstallations(installations);
         }
 

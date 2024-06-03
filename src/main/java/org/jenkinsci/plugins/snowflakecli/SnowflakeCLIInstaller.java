@@ -3,19 +3,14 @@ package org.jenkinsci.plugins.snowflakecli;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.FilePath;
-import hudson.model.DownloadService;
 import hudson.model.Node;
 import hudson.model.TaskListener;
-import hudson.tools.DownloadFromUrlInstaller;
 import hudson.tools.ToolInstallation;
 import hudson.tools.ToolInstaller;
 import hudson.tools.ToolInstallerDescriptor;
 import hudson.util.FormValidation;
-import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
-
-import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -39,20 +34,12 @@ public class SnowflakeCLIInstaller extends ToolInstaller {
     }
     
     protected boolean isUpToDate(FilePath expectedLocation, String version) throws IOException, InterruptedException {
-        FilePath snowversionFile = expectedLocation.child(SNOW_VERSION);
-        if(snowversionFile.exists())
-        {
-            LOGGER.info(version + " == " + snowversionFile.readToString());
-        }
-        
-        return snowversionFile.exists() && snowversionFile.readToString().equals(version);
+        FilePath snowVersionFile = expectedLocation.child(SNOW_VERSION);
+        return snowVersionFile.exists() && snowVersionFile.readToString().equals(version);
     }
     
     private String createScript(FilePath binDirectory)  {
-        String newVersion = "";
-        LOGGER.info(DownloadService.Downloadable.idFor(this.getClass()));
-        newVersion = "=="+this.version;
-        
+        String newVersion = "=="+this.version;
         String script = "temp_PIPX_BIN_DIR=$PIPX_BIN_DIR\n" +
                 "temp_PIPX_HOME=$PIPX_HOME\n"+
                 "export PIPX_HOME=\""+ binDirectory.getRemote()  +"\"\n"+
@@ -67,11 +54,9 @@ public class SnowflakeCLIInstaller extends ToolInstaller {
     
     public FilePath performInstallation(ToolInstallation tool, Node node, TaskListener log) throws IOException, InterruptedException {
         FilePath dir = this.preferredLocation(tool, node);
-        LOGGER.info(dir.getRemote());
         FilePath binDirectory = dir.child("snow_cli_executable_bin");
         if(isUpToDate(binDirectory, this.version))
         {
-            LOGGER.info("They are equals, and snow is up to date");
             return binDirectory;
         }
         

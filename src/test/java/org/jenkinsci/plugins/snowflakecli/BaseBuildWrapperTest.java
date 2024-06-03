@@ -5,13 +5,10 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.JenkinsRule;
-
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Closeables;
-
 import hudson.DescriptorExtensionList;
 import hudson.model.Descriptor;
 import hudson.model.FreeStyleBuild;
@@ -46,14 +43,14 @@ public abstract class BaseBuildWrapperTest {
         return new SnowflakeInstallation(nameAndPath, snowflakeDir.getAbsolutePath(), null);
     }
 
-    protected static FreeStyleBuild runFreestyleJobWith(final JenkinsRule system, final SnowflakeBuildWrapperBase snowBuildWrapper) throws IOException, Exception {
+    protected static FreeStyleBuild runFreestyleJobWith(final JenkinsRule system, final SnowflakeCLIBuildWrapperBase snowBuildWrapper) throws IOException, Exception {
         final FreeStyleProject project = createFreeStyleJob(system, "xvfbFreestyleJob");
         setupSnowflakeWrapperOn(project, snowBuildWrapper);
 
         return system.buildAndAssertSuccess(project);
     }
 
-    protected static void setupSnowflakeWrapperOn(final FreeStyleProject project, final SnowflakeBuildWrapperBase snowBuildWrapper) {
+    protected static void setupSnowflakeWrapperOn(final FreeStyleProject project, final SnowflakeCLIBuildWrapperBase snowBuildWrapper) {
         final DescribableList<BuildWrapper, Descriptor<BuildWrapper>> buildWrappers = project.getBuildWrappersList();
 
         buildWrappers.add(snowBuildWrapper);

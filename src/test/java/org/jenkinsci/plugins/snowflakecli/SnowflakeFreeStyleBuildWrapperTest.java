@@ -8,15 +8,11 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.SingleFileSCM;
-
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItems;
-import static org.jenkinsci.plugins.snowflakecli.BaseBuildWrapperTest.createFreeStyleJob;
 
 public class SnowflakeFreeStyleBuildWrapperTest extends BaseBuildWrapperTest {
     
@@ -33,7 +29,7 @@ public class SnowflakeFreeStyleBuildWrapperTest extends BaseBuildWrapperTest {
 
     @Test
     public void inlineConfigurationMode() throws Exception {
-        SnowflakeFreeStyleBuildWrapper buildWrapper = new SnowflakeFreeStyleBuildWrapper();
+        SnowflakeCLIFreeStyleBuildWrapper buildWrapper = new SnowflakeCLIFreeStyleBuildWrapper();
         Configuration configuration = new Configuration("Inline", "CONNECTION_TEXT", "");
         buildWrapper.setConfig(configuration);
         buildWrapper.setSnowflakeInstallation("working");
@@ -53,7 +49,7 @@ public class SnowflakeFreeStyleBuildWrapperTest extends BaseBuildWrapperTest {
         FreeStyleProject project = jenkins.createFreeStyleProject();
         project.setScm(new SingleFileSCM("config.toml", "CONNECTION_TEXT"));
         
-        SnowflakeFreeStyleBuildWrapper buildWrapper = new SnowflakeFreeStyleBuildWrapper();
+        SnowflakeCLIFreeStyleBuildWrapper buildWrapper = new SnowflakeCLIFreeStyleBuildWrapper();
         Configuration configuration = new Configuration("File", "", "config.toml");
         buildWrapper.setConfig(configuration);
         buildWrapper.setSnowflakeInstallation("working");
@@ -68,7 +64,7 @@ public class SnowflakeFreeStyleBuildWrapperTest extends BaseBuildWrapperTest {
     @Test
     public void fileConfigurationModeFileNotFound() throws Exception {
         FreeStyleProject project = jenkins.createFreeStyleProject();
-        SnowflakeFreeStyleBuildWrapper buildWrapper = new SnowflakeFreeStyleBuildWrapper();
+        SnowflakeCLIFreeStyleBuildWrapper buildWrapper = new SnowflakeCLIFreeStyleBuildWrapper();
         Configuration configuration = new Configuration("File", "", "unexisting.toml");
         buildWrapper.setConfig(configuration);
         buildWrapper.setSnowflakeInstallation("working");
@@ -87,7 +83,7 @@ public class SnowflakeFreeStyleBuildWrapperTest extends BaseBuildWrapperTest {
     
     @Test
     public void invalidConfigurationMode() throws Exception {
-        SnowflakeFreeStyleBuildWrapper buildWrapper = new SnowflakeFreeStyleBuildWrapper();
+        SnowflakeCLIFreeStyleBuildWrapper buildWrapper = new SnowflakeCLIFreeStyleBuildWrapper();
         Configuration configuration = new Configuration("Invalid", "CONNECTION_TEXT", "");
         buildWrapper.setConfig(configuration);
         buildWrapper.setSnowflakeInstallation("working");
@@ -107,7 +103,7 @@ public class SnowflakeFreeStyleBuildWrapperTest extends BaseBuildWrapperTest {
     
     @Test
     public void installationNotFoundError() throws Exception {
-        final SnowflakeFreeStyleBuildWrapper snowflakeFreeStyleBuildWrapper = new SnowflakeFreeStyleBuildWrapper();
+        final SnowflakeCLIFreeStyleBuildWrapper snowflakeFreeStyleBuildWrapper = new SnowflakeCLIFreeStyleBuildWrapper();
         Configuration configuration = new Configuration("Inline", "CONNECTION_TEXT", "");
         snowflakeFreeStyleBuildWrapper.setSnowflakeInstallation("unexistant");
         snowflakeFreeStyleBuildWrapper.setConfig(configuration);

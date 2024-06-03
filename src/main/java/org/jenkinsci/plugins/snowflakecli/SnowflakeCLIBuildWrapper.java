@@ -12,15 +12,15 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import java.io.*;
 import java.util.logging.Logger;
 
-public class SnowflakeBuildWrapper extends SnowflakeBuildWrapperBase {
+public class SnowflakeCLIBuildWrapper extends SnowflakeCLIBuildWrapperBase {
     private String configFilePath;
     
     private String snowflakeInstallation;
-    private static final Logger LOGGER = Logger.getLogger(SnowflakeBuildWrapper.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(SnowflakeCLIBuildWrapper.class.getName());
     
         
     @DataBoundConstructor
-    public SnowflakeBuildWrapper() {
+    public SnowflakeCLIBuildWrapper() {
     }
 
     @DataBoundSetter
@@ -48,7 +48,7 @@ public class SnowflakeBuildWrapper extends SnowflakeBuildWrapperBase {
         try {
             FilePath workspacePath = this.setupSnowflakeHome(workspace, launcher, listener, initialEnvironment);
             context.env("SNOWFLAKE_HOME", workspacePath.getRemote());
-            context.setDisposer(new SnowflakeDisposer(workspacePath));
+            //context.setDisposer(new SnowflakeDisposer(workspacePath));
             
         }catch (Exception ex) {
             LOGGER.severe(exceptionToString(ex));
@@ -63,16 +63,14 @@ public class SnowflakeBuildWrapper extends SnowflakeBuildWrapperBase {
     
     @Override
     protected FilePath getTemporalConfigurationFile(FilePath workspace, EnvVars env, TaskListener listener) throws IOException, InterruptedException {
-        FilePath configFile = null;
-        if (new File(getConfigFilePath()).exists()) {
-            configFile = new FilePath(workspace, getConfigFilePath());
+        FilePath configFile = new FilePath(workspace, getConfigFilePath());
+        if (configFile.exists()) {
+            return configFile;
         }
         else
         {
             throw new IOException(Messages.ConfigurationPathNotFound(getConfigFilePath()));
         }
-        
-        return configFile;
     }
     
     @Extension
@@ -82,7 +80,7 @@ public class SnowflakeBuildWrapper extends SnowflakeBuildWrapperBase {
             return Messages.BuildWrapperName();
         }
         public SnowflakeDescriptor() {
-            super(SnowflakeBuildWrapper.class);
+            super(SnowflakeCLIBuildWrapper.class);
             load();
         }
 

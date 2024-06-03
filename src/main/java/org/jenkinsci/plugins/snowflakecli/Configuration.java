@@ -23,10 +23,6 @@ public class Configuration {
     }
     
     public Mode getMode() {
-        if(this.mode == null) {
-             this.mode = getMode(value);
-        }
-        
         return this.mode;
     }
     

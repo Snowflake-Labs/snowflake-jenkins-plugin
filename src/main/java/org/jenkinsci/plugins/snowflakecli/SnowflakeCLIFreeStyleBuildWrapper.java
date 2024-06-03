@@ -5,7 +5,6 @@ import hudson.*;
 import hudson.model.Computer;
 import hudson.model.Run;
 import hudson.model.TaskListener;
-import hudson.tasks.BuildWrapper;
 import hudson.util.ListBoxModel;
 
 import hudson.model.AbstractProject;
@@ -17,14 +16,12 @@ import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.*;
 
-import java.util.logging.Logger;
-
-public class SnowflakeFreeStyleBuildWrapper extends SnowflakeBuildWrapperBase {
+public class SnowflakeCLIFreeStyleBuildWrapper extends SnowflakeCLIBuildWrapperBase {
     private Configuration config;
     private String snowflakeInstallation;
 
     @DataBoundConstructor
-    public SnowflakeFreeStyleBuildWrapper() {
+    public SnowflakeCLIFreeStyleBuildWrapper() {
     }
 
     @DataBoundSetter
@@ -113,7 +110,7 @@ public class SnowflakeFreeStyleBuildWrapper extends SnowflakeBuildWrapperBase {
                 if (!isNullOrEmpty(getFileConfig())) {
                     configFile = new FilePath(workspace, getFileConfig());
                     if (!configFile.exists()) {
-                        throw new FileNotFoundException(Messages.ConfigurationPathNotFound(getFileConfig()));
+                        throw new FileNotFoundException(Messages.ConfigurationPathNotFound(configFile.getRemote()));
                     }
                     
                     listener.getLogger().println("Setting config file to " + getFileConfig());
@@ -132,7 +129,7 @@ public class SnowflakeFreeStyleBuildWrapper extends SnowflakeBuildWrapperBase {
     }
 
     private boolean isNullOrEmpty(String value) {
-        return (value == null || value.trim().isEmpty()) ? true : false;
+        return value == null || value.trim().isEmpty();
     }
 
 
@@ -155,11 +152,11 @@ public class SnowflakeFreeStyleBuildWrapper extends SnowflakeBuildWrapperBase {
         }
         
         public SnowflakeFreeStyleDescriptor() {
-            super(SnowflakeFreeStyleBuildWrapper.class);
+            super(SnowflakeCLIFreeStyleBuildWrapper.class);
             load();
         }
         
-        public boolean isInlineConfigChecked(SnowflakeFreeStyleBuildWrapper instance) {
+        public boolean isInlineConfigChecked(SnowflakeCLIFreeStyleBuildWrapper instance) {
             boolean result = true;
             if (instance != null)
                 return (instance.getInlineConfig() != null);
@@ -168,7 +165,7 @@ public class SnowflakeFreeStyleBuildWrapper extends SnowflakeBuildWrapperBase {
         }
 
 
-        public boolean isFileConfigChecked(SnowflakeFreeStyleBuildWrapper instance) {
+        public boolean isFileConfigChecked(SnowflakeCLIFreeStyleBuildWrapper instance) {
             boolean result = false;
             if (instance != null)
                 return (instance.getFileConfig() != null);
