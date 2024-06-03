@@ -71,13 +71,11 @@ public class SnowflakeCLIInstaller extends ToolInstaller {
             String[] cmd = Utils.getCommandCall(script);
             int r = node.createLauncher(log).launch().cmds(cmd).stdout(log).pwd(dir).join();
             if (r != 0) {
-                throw new IOException(Messages.CommandReturnedStatus(r));
+                throw new InterruptedException(Messages.CommandReturnedStatus(r));
             }
             
             binDirectory.child(SNOW_VERSION).write(this.version, "UTF-8");
             
-        } catch(Exception ex) {
-            throw new IOException(Messages.ErrorExecutingInstallation());
         } finally {
             script.delete();
         }
