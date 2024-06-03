@@ -108,7 +108,7 @@ public class SnowflakeFreeStyleBuildWrapperTest extends BaseBuildWrapperTest {
         snowflakeFreeStyleBuildWrapper.setSnowflakeInstallation("unexistant");
         snowflakeFreeStyleBuildWrapper.setConfig(configuration);
         
-        final FreeStyleProject project = createFreeStyleJob(jenkins, "shouldFailIfInstallationIsNotFound");
+        final FreeStyleProject project = jenkins.createFreeStyleProject("shouldFailIfInstallationIsNotFound");
         project.getBuildWrappersList().add(snowflakeFreeStyleBuildWrapper);
         
         final QueueTaskFuture<FreeStyleBuild> buildResult = project.scheduleBuild2(0);
