@@ -54,16 +54,20 @@ public class SnowflakeCLIInstaller extends ToolInstaller {
         newVersion = "=="+this.version;
         
         String script = "temp_PIPX_BIN_DIR=$PIPX_BIN_DIR\n" +
+                "temp_PIPX_HOME=$PIPX_HOME\n"+
+                "export PIPX_HOME=\""+ binDirectory.getRemote()  +"\"\n"+
                 "export PIPX_BIN_DIR=\""+ binDirectory.getRemote() +"\"\n" +
                 "export PATH=$PIPX_BIN_DIR:$PATH\n" +
                 "pipx install snowflake-cli-labs" + newVersion + " --force\n" +
-                "export PIPX_BIN_DIR=$temp_PIPX_BIN_DIR";
+                "export PIPX_BIN_DIR=$temp_PIPX_BIN_DIR\n" +
+                "export PIPX_HOME=temp_PIPX_HOME";;
         
         return script;
     }
     
     public FilePath performInstallation(ToolInstallation tool, Node node, TaskListener log) throws IOException, InterruptedException {
         FilePath dir = this.preferredLocation(tool, node);
+        LOGGER.info(dir.getRemote());
         FilePath binDirectory = dir.child("snow_cli_executable_bin");
         if(isUpToDate(binDirectory, this.version))
         {
@@ -85,13 +89,10 @@ public class SnowflakeCLIInstaller extends ToolInstaller {
                 throw new IOException(Messages.CommandReturnedStatus(r));
             }
             
-            
-
             binDirectory.child(SNOW_VERSION).write(this.version, "UTF-8");
             
         } catch(Exception ex) {
             throw new IOException(Messages.ErrorExecutingInstallation());
-            
         } finally {
             script.delete();
         }

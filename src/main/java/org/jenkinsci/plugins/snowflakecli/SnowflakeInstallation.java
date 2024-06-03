@@ -2,7 +2,6 @@ package org.jenkinsci.plugins.snowflakecli;
 
 import hudson.EnvVars;
 import hudson.Extension;
-import hudson.Functions;
 import hudson.model.EnvironmentSpecific;
 import hudson.model.Node;
 import hudson.model.TaskListener;
@@ -20,6 +19,8 @@ import java.util.logging.Logger;
 
 public class SnowflakeInstallation extends ToolInstallation implements EnvironmentSpecific<SnowflakeInstallation>,
         NodeSpecific<SnowflakeInstallation> {
+    private static final Logger LOGGER = Logger.getLogger(SnowflakeCLIInstaller.class.getName());
+    
 
     @DataBoundConstructor
     public SnowflakeInstallation(String name, String home, List<? extends ToolProperty<?>> properties) {
@@ -30,7 +31,7 @@ public class SnowflakeInstallation extends ToolInstallation implements Environme
     public void buildEnvVars(EnvVars env) {
         String root = getHome();
         if (root != null) {
-            env.put("PATH+SNOWFLAKECLI_BIN", new File(root, "bin").toString());
+            env.put("PATH+SNOWFLAKECLI_BIN", new File(root).toString());
         }
     }
 
@@ -59,14 +60,14 @@ public class SnowflakeInstallation extends ToolInstallation implements Environme
         @Override
         public SnowflakeInstallation[] getInstallations() {
             return Jenkins.getActiveInstance()
-                    .getDescriptorByType(SnowflakeBuildWrapper.DescriptorImpl.class)
+                    .getDescriptorByType(SnowflakeFreeStyleBuildWrapper.SnowflakeFreeStyleDescriptor.class)
                     .getInstallations();
         }
 
         @Override
         public void setInstallations(SnowflakeInstallation... installations) {
             Jenkins.getActiveInstance()
-                    .getDescriptorByType(SnowflakeBuildWrapper.DescriptorImpl.class)
+                    .getDescriptorByType(SnowflakeFreeStyleBuildWrapper.SnowflakeFreeStyleDescriptor.class)
                     .setInstallations(installations);
         }
 

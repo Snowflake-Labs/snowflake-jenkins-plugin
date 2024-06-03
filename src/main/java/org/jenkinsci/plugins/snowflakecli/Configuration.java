@@ -11,7 +11,7 @@ public class Configuration {
     private Mode mode;
 
     public enum Mode {
-        INLINE, FILE
+        INLINE, FILE, INVALID
     }
 
     @DataBoundConstructor
@@ -19,13 +19,12 @@ public class Configuration {
         this.value = value;
         this.fileConfig = fileConfig;
         this.inlineConfig = inlineConfig;
-        this.mode = Mode.valueOf(this.value.trim().toUpperCase());
+        this.mode = getMode(value);
     }
-    
     
     public Mode getMode() {
         if(this.mode == null) {
-             this.mode = Mode.valueOf(this.value.trim().toUpperCase());
+             this.mode = getMode(value);
         }
         
         return this.mode;
@@ -45,4 +44,15 @@ public class Configuration {
     public String getValue() {
         return this.value;
     } 
+    
+    private Mode getMode(String mode)
+    {
+        mode = mode.trim().toUpperCase();
+        try {
+            return Mode.valueOf(mode);
+        }
+        catch (IllegalArgumentException e) {
+            return Mode.INVALID;
+        }
+    }
 }
