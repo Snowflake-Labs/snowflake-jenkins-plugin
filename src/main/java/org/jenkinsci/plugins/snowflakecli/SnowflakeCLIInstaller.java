@@ -8,10 +8,18 @@ import hudson.model.TaskListener;
 import hudson.tools.ToolInstallation;
 import hudson.tools.ToolInstaller;
 import hudson.tools.ToolInstallerDescriptor;
+import hudson.util.ArgumentListBuilder;
 import hudson.util.FormValidation;
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
+import org.springframework.core.io.ResourceLoader;
+
+import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -38,18 +46,8 @@ public class SnowflakeCLIInstaller extends ToolInstaller {
         return snowVersionFile.exists() && snowVersionFile.readToString().equals(version);
     }
     
-    private String createScript(FilePath binDirectory)  {
-        String newVersion = "=="+this.version;
-        String script = "temp_PIPX_BIN_DIR=$PIPX_BIN_DIR\n" +
-                "temp_PIPX_HOME=$PIPX_HOME\n"+
-                "export PIPX_HOME=\""+ binDirectory.getRemote()  +"\"\n"+
-                "export PIPX_BIN_DIR=\""+ binDirectory.getRemote() +"\"\n" +
-                "export PATH=$PIPX_BIN_DIR:$PATH\n" +
-                "pipx install snowflake-cli-labs" + newVersion + " --force\n" +
-                "export PIPX_BIN_DIR=$temp_PIPX_BIN_DIR\n" +
-                "export PIPX_HOME=temp_PIPX_HOME";;
-        
-        return script;
+    private String getInstallationScript() throws IOException, InterruptedException {
+        return Utils.getClassResourceContent(this.getClass(), "installationScript.sh");
     }
     
     public FilePath performInstallation(ToolInstallation tool, Node node, TaskListener log) throws IOException, InterruptedException {
@@ -60,17 +58,20 @@ public class SnowflakeCLIInstaller extends ToolInstaller {
             return binDirectory;
         }
         
-        FilePath script = dir.createTextTempFile("hudson", ".sh", this.createScript(binDirectory));
-
+        FilePath script = dir.createTextTempFile("hudson", ".sh", this.getInstallationScript());
         try {
             if(binDirectory.child("snow_cli_executable_bin").exists())
             {
                 binDirectory.child("snow_cli_executable_bin").deleteRecursive();
             }
             
-            String[] cmd = Utils.getCommandCall(script);
-            int r = node.createLauncher(log).launch().cmds(cmd).stdout(log).pwd(dir).join();
+            ArgumentListBuilder args = new ArgumentListBuilder();
+            args.add(Utils.getCommandCall(script));
+            args.add(binDirectory.getRemote());
+            args.add(this.version);
+            int r = node.createLauncher(log).launch().cmds(args).stdout(log).pwd(dir).join();
             if (r != 0) {
+                log.error(Messages.CommandReturnedStatus(r));
                 throw new InterruptedException(Messages.CommandReturnedStatus(r));
             }
             

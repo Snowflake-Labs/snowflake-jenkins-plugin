@@ -51,16 +51,19 @@ pipeline {
 #### Scripted Pipeline
 
 ```groovy
-// Run on an agent where we want to use Go
 node {
     // Ensure the desired Snowflake CLI version is installed for all stages,
     // using the name defined in the Global Tool Configuration
-    def root = tool type: 'snowflakecli', name: 'latest'
+    def root = tool type: 'snowflakecli', name: '2.4.0'
 
-          // Use a wrap directive, set $class as SnowflakeCLIBuildWrapper and add the parameter for the path to the configuration file in your repository.
-          // This wrapper copies the information of the input file and stores it to a temporal config.toml file.
-    wrap([$class: 'SnowflakeCLIBuildWrapper', configFilePath: 'config.toml']) {
-        sh 'snow connection list'
+    // Manually set the PATH variable to the snow executable.
+    withEnv(["PATH+SNOWFLAKECLI=${root}"]) {
+       // Use a wrap directive, set $class as SnowflakeCLIBuildWrapper and add the parameter for the path to the configuration file in your repository.
+       // This wrapper copies the information of the input file and stores it to a temporal config.toml file.
+       wrap([$class: 'SnowflakeCLIBuildWrapper', configFilePath: 'config.toml']) {
+          sh 'snow --version'
+          sh 'snow connection list'
+       }
     }
 }
 ```

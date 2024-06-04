@@ -61,23 +61,22 @@ public class SnowflakeCLIFreeStyleBuildWrapper extends SnowflakeCLIBuildWrapperB
     
     @Override
     public void setUp(Context context, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException {
+        this.setUpSnowflakeInstallation(context, listener, initialEnvironment);
+        super.setUp(context, build, workspace, launcher, listener, initialEnvironment);
+    }
+    
+    public void setUpSnowflakeInstallation(Context context, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException {
         SnowflakeInstallation installation = getInstallation();
-        FilePath workspacePath = this.setupSnowflakeHome(workspace, launcher, listener, initialEnvironment);
         if (installation != null) {
             installation = installation.forNode(Computer.currentComputer().getNode(), listener).forEnvironment(initialEnvironment);
             EnvVars envVars = new EnvVars();
             installation.buildEnvVars(envVars);
             context.getEnv().putAll(envVars);
         }
-        else
-        {
+        else {
             throw new AbortException(Messages.InstallationNotFound());
         }
-        
-        context.env("SNOWFLAKE_HOME", workspacePath.getRemote());
-        context.setDisposer(new SnowflakeDisposer(workspacePath));
     }
-    
 
     @Override
     public SnowflakeFreeStyleDescriptor getDescriptor() {
@@ -101,7 +100,7 @@ public class SnowflakeCLIFreeStyleBuildWrapper extends SnowflakeCLIBuildWrapperB
             case INLINE:
                 configFile = workspace.createTextTempFile("config", ".toml", getInlineConfig());
                 if (configFile == null || !configFile.exists()) {
-                    throw new IOException(Messages.ConfigurationNotCreated());
+                    throw new InterruptedException(Messages.ConfigurationNotCreated());
                 }
                 
                 listener.getLogger().println("Creating temporal config file in " + configFile.getRemote());

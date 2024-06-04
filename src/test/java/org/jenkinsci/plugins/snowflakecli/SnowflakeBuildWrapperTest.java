@@ -30,7 +30,8 @@ public class SnowflakeBuildWrapperTest extends BaseBuildWrapperTest {
         WorkflowJob project = jenkins.createProject(WorkflowJob.class);
         project.setDefinition(new CpsFlowDefinition("" +
             "node {" 
-                + "  wrap([$class: 'SnowflakeBuildWrapper', snowflakeInstallation: 'working', configFilePath: 'config.toml']) {\n"
+                + "  writeFile text: 'CONNECTION_STRING', file: 'config.toml'\n"
+                + "  wrap([$class: 'SnowflakeCLIBuildWrapper', snowflakeInstallation: 'working', configFilePath: 'config.toml']) {\n"
                 + "    sh 'snowTemp connection list'\n"
                 + "  }\n" +
             "}", true));

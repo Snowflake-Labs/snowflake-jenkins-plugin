@@ -10,14 +10,11 @@ import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.*;
-import java.util.logging.Logger;
 
 public class SnowflakeCLIBuildWrapper extends SnowflakeCLIBuildWrapperBase {
     private String configFilePath;
     
     private String snowflakeInstallation;
-    private static final Logger LOGGER = Logger.getLogger(SnowflakeCLIBuildWrapper.class.getName());
-    
         
     @DataBoundConstructor
     public SnowflakeCLIBuildWrapper() {
@@ -41,19 +38,6 @@ public class SnowflakeCLIBuildWrapper extends SnowflakeCLIBuildWrapperBase {
     
     public String getConfigFilePath() {
         return this.configFilePath;
-    }
-    
-    @Override
-    public void setUp(Context context, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException {
-        try {
-            FilePath workspacePath = this.setupSnowflakeHome(workspace, launcher, listener, initialEnvironment);
-            context.env("SNOWFLAKE_HOME", workspacePath.getRemote());
-            //context.setDisposer(new SnowflakeDisposer(workspacePath));
-            
-        }catch (Exception ex) {
-            LOGGER.severe(exceptionToString(ex));
-            listener.fatalError(exceptionToString(ex));
-        }
     }
     
     @Override
