@@ -10,16 +10,11 @@ import hudson.tools.ToolInstaller;
 import hudson.tools.ToolInstallerDescriptor;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.FormValidation;
-import jenkins.model.Jenkins;
+
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
-import org.springframework.core.io.ResourceLoader;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -71,8 +66,15 @@ public class SnowflakeCLIInstaller extends ToolInstaller {
             args.add(this.version);
             int r = node.createLauncher(log).launch().cmds(args).stdout(log).pwd(dir).join();
             if (r != 0) {
-                log.error(Messages.CommandReturnedStatus(r));
-                throw new InterruptedException(Messages.CommandReturnedStatus(r));
+                if(r == 1000)
+                {
+                    log.error(Messages.RequiredPythonThree());
+                    throw new InterruptedException(Messages.RequiredPythonThree());
+                }
+                else {
+                    log.error(Messages.CommandReturnedStatus(r));
+                    throw new InterruptedException(Messages.CommandReturnedStatus(r));
+                }
             }
             
             binDirectory.child(SNOW_VERSION).write(this.version, "UTF-8");

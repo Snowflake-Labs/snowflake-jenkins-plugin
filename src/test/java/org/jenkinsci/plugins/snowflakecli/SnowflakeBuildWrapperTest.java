@@ -26,20 +26,83 @@ public class SnowflakeBuildWrapperTest extends BaseBuildWrapperTest {
     }
 
     @Test
-    public void inlineConfigurationMode() throws Exception {
+    public void settingConfigFile() throws Exception {
         WorkflowJob project = jenkins.createProject(WorkflowJob.class);
         project.setDefinition(new CpsFlowDefinition("" +
             "node {" 
+                + "  def root = tool type: 'snowflakecli', name: 'working'\n"
                 + "  writeFile text: 'CONNECTION_STRING', file: 'config.toml'\n"
-                + "  wrap([$class: 'SnowflakeCLIBuildWrapper', snowflakeInstallation: 'working', configFilePath: 'config.toml']) {\n"
-                + "    sh 'snowTemp connection list'\n"
-                + "  }\n" +
-            "}", true));
+                + "  withEnv([\"PATH+SNOWFLAKECLI=${root}\"]) {\n"
+                + "     wrap([$class: 'SnowflakeCLIBuildWrapper', snowflakeInstallation: 'working', configFilePath: 'config.toml']) {\n"
+                + "         sh 'snowTemp connection list'\n"
+                + "     }"
+                +  "  }\n" 
+                + "}", true));
         final QueueTaskFuture<WorkflowRun> buildResult = project.scheduleBuild2(0);
         final WorkflowRun build = buildResult.get();
         
         jenkins.assertBuildStatus(Result.SUCCESS, build);
         
-        jenkins.assertLogContains("writeFile", build);
+        jenkins.assertLogContains("This executable will success", build);
+    }
+    
+    @Test
+    public void invalidConfigFile() throws Exception {
+        WorkflowJob project = jenkins.createProject(WorkflowJob.class);
+        project.setDefinition(new CpsFlowDefinition("" +
+            "node {" 
+                + "  def root = tool type: 'snowflakecli', name: 'working'\n"
+                + "  withEnv([\"PATH+SNOWFLAKECLI=${root}\"]) {\n"
+                + "     wrap([$class: 'SnowflakeCLIBuildWrapper', snowflakeInstallation: 'working', configFilePath: 'config.toml']) {\n"
+                + "         sh 'snowTemp connection list'\n"
+                + "     }"
+                +  "  }\n" 
+                + "}", true));
+        final QueueTaskFuture<WorkflowRun> buildResult = project.scheduleBuild2(0);
+        final WorkflowRun build = buildResult.get();
+        
+        jenkins.assertBuildStatus(Result.FAILURE, build);
+        
+        jenkins.assertLogContains("Failed to create a temp directory on", build);
+    }
+    
+    @Test
+    public void installationNotFound() throws Exception {
+        WorkflowJob project = jenkins.createProject(WorkflowJob.class);
+        project.setDefinition(new CpsFlowDefinition("" +
+            "node {" 
+                + "  def root = tool type: 'snowflakecli', name: 'invalid'\n"
+                + "  withEnv([\"PATH+SNOWFLAKECLI=${root}\"]) {\n"
+                + "     wrap([$class: 'SnowflakeCLIBuildWrapper', snowflakeInstallation: 'working', configFilePath: 'config.toml']) {\n"
+                + "         sh 'snowTemp connection list'\n"
+                + "     }"
+                +  "  }\n" 
+                + "}", true));
+        final QueueTaskFuture<WorkflowRun> buildResult = project.scheduleBuild2(0);
+        final WorkflowRun build = buildResult.get();
+        
+        jenkins.assertBuildStatus(Result.FAILURE, build);
+        
+        jenkins.assertLogContains("No snowflakecli named invalid found", build);
+    }
+    
+    @Test
+    public void failingExecutable() throws Exception {
+        WorkflowJob project = jenkins.createProject(WorkflowJob.class);
+        project.setDefinition(new CpsFlowDefinition("" +
+            "node {" 
+                + "  def root = tool type: 'snowflakecli', name: 'failing'\n"
+                + "  withEnv([\"PATH+SNOWFLAKECLI=${root}\"]) {\n"
+                + "     wrap([$class: 'SnowflakeCLIBuildWrapper', snowflakeInstallation: 'failing', configFilePath: 'config.toml']) {\n"
+                + "         sh 'snowTemp connection list'\n"
+                + "     }"
+                +  "  }\n" 
+                + "}", true));
+        final QueueTaskFuture<WorkflowRun> buildResult = project.scheduleBuild2(0);
+        final WorkflowRun build = buildResult.get();
+        
+        jenkins.assertBuildStatus(Result.FAILURE, build);
+        
+        jenkins.assertLogContains("script returned exit code 1", build);
     }
 }

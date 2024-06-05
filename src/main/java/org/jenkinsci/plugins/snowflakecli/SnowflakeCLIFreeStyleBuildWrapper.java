@@ -2,12 +2,8 @@ package org.jenkinsci.plugins.snowflakecli;
 
 import hudson.*;
 
-import hudson.model.Computer;
-import hudson.model.Run;
-import hudson.model.TaskListener;
+import hudson.model.*;
 import hudson.util.ListBoxModel;
-
-import hudson.model.AbstractProject;
 
 import hudson.tasks.BuildWrapperDescriptor;
 
@@ -25,18 +21,21 @@ public class SnowflakeCLIFreeStyleBuildWrapper extends SnowflakeCLIBuildWrapperB
     }
 
     @DataBoundSetter
-    public void setConfig(Configuration config) {
+    public void setConfig(final Configuration config) {
         this.config = config;
     }
     
     @DataBoundSetter
-    public void setSnowflakeInstallation(String snowflakeInstallation) {
+    public void setSnowflakeInstallation(final String snowflakeInstallation) {
         this.snowflakeInstallation = snowflakeInstallation;
     }
     
-    public String getSnowflakeInstallation()
-    {
+    public String getSnowflakeInstallation() {
         return snowflakeInstallation;
+    }
+    
+    public Configuration getConfig() {
+        return this.config;
     }
 
     public String getInlineConfig() {
@@ -61,7 +60,14 @@ public class SnowflakeCLIFreeStyleBuildWrapper extends SnowflakeCLIBuildWrapperB
     
     @Override
     public void setUp(Context context, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException {
-        this.setUpSnowflakeInstallation(context, listener, initialEnvironment);
+        try {
+            this.setUpSnowflakeInstallation(context, listener, initialEnvironment);
+        }
+        catch (Exception ex) {
+            build.setResult(Result.FAILURE);
+            listener.fatalError(exceptionToString(ex));
+        }
+        
         super.setUp(context, build, workspace, launcher, listener, initialEnvironment);
     }
     
@@ -74,7 +80,7 @@ public class SnowflakeCLIFreeStyleBuildWrapper extends SnowflakeCLIBuildWrapperB
             context.getEnv().putAll(envVars);
         }
         else {
-            throw new AbortException(Messages.InstallationNotFound());
+            throw new InterruptedException(Messages.InstallationNotFound());
         }
     }
 
@@ -109,19 +115,19 @@ public class SnowflakeCLIFreeStyleBuildWrapper extends SnowflakeCLIBuildWrapperB
                 if (!isNullOrEmpty(getFileConfig())) {
                     configFile = new FilePath(workspace, getFileConfig());
                     if (!configFile.exists()) {
-                        throw new FileNotFoundException(Messages.ConfigurationPathNotFound(configFile.getRemote()));
+                        throw new IOException(Messages.ConfigurationPathNotFound(getFileConfig()));
                     }
                     
                     listener.getLogger().println("Setting config file to " + getFileConfig());
                 }
                 else
                 {
-                   throw new FileNotFoundException(Messages.EmptyConfigurationPath());
+                   throw new IOException(Messages.EmptyConfigurationPath());
                 }
                 
                 break;
             default:
-                throw new IOException(Messages.InvalidConfigMode());
+                throw new InterruptedException(Messages.InvalidConfigMode());
         }
         
         return configFile;
@@ -180,7 +186,6 @@ public class SnowflakeCLIFreeStyleBuildWrapper extends SnowflakeCLIBuildWrapperB
             return m;
         }
         
-
         public boolean isApplicable(AbstractProject<?, ?> project) {
             return true;
         }

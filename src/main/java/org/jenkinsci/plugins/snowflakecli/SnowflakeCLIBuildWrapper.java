@@ -21,7 +21,7 @@ public class SnowflakeCLIBuildWrapper extends SnowflakeCLIBuildWrapperBase {
     }
 
     @DataBoundSetter
-    public void setConfigFilePath(String configFilePath) {
+    public void setConfigFilePath(final String configFilePath) {
         this.configFilePath = configFilePath;
     }
 
@@ -31,10 +31,9 @@ public class SnowflakeCLIBuildWrapper extends SnowflakeCLIBuildWrapperBase {
     }
     
     @DataBoundSetter
-    public void setSnowflakeInstallation(String snowflakeInstallation) {
+    public void setSnowflakeInstallation(final String snowflakeInstallation) {
         this.snowflakeInstallation = snowflakeInstallation;
     }
-
     
     public String getConfigFilePath() {
         return this.configFilePath;
@@ -49,6 +48,7 @@ public class SnowflakeCLIBuildWrapper extends SnowflakeCLIBuildWrapperBase {
     protected FilePath getTemporalConfigurationFile(FilePath workspace, EnvVars env, TaskListener listener) throws IOException, InterruptedException {
         FilePath configFile = new FilePath(workspace, getConfigFilePath());
         if (configFile.exists()) {
+            listener.getLogger().println("Setting config file to " + getConfigFilePath());
             return configFile;
         }
         else

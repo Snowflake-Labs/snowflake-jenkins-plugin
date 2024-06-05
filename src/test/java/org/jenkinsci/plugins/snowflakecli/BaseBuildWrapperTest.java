@@ -6,16 +6,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import org.junit.rules.TemporaryFolder;
-import org.jvnet.hudson.test.JenkinsRule;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Closeables;
 import hudson.DescriptorExtensionList;
 import hudson.model.Descriptor;
-import hudson.model.FreeStyleBuild;
-import hudson.model.FreeStyleProject;
-import hudson.tasks.BuildWrapper;
 import hudson.tools.ToolInstallation;
-import hudson.util.DescribableList;
 import jenkins.model.Jenkins;
 
 public abstract class BaseBuildWrapperTest {

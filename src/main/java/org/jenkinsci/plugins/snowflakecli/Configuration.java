@@ -1,8 +1,6 @@
 package org.jenkinsci.plugins.snowflakecli;
 
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.DataBoundSetter;
-
 
 public class Configuration {
     private final String value;
@@ -29,13 +27,10 @@ public class Configuration {
     public String getInlineConfig() {
         return this.inlineConfig;
     }
-
-
     
     public String getFileConfig() {
         return this.fileConfig;
     }
-
     
     public String getValue() {
         return this.value;

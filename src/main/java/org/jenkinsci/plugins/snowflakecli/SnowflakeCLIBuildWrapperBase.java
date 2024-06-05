@@ -39,6 +39,7 @@ public abstract class SnowflakeCLIBuildWrapperBase extends SimpleBuildWrapper {
             context.setDisposer(new SnowflakeDisposer(snowflakeHome.getRemote()));
             
         }catch (Exception ex) {
+            build.setResult(Result.FAILURE);
             listener.fatalError(exceptionToString(ex));
         }
     }
