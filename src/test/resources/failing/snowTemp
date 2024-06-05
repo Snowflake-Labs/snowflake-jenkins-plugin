@@ -1,0 +1,2 @@
+echo "this executable will fail"
+exit 1

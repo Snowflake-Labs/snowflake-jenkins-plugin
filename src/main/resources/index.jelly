@@ -1,0 +1,4 @@
+<?jelly escape-by-default='true'?>
+<div>
+This plugin provides a build wrapper for <a href="https://docs.snowflake.com/en/developer-guide/snowflake-cli-v2/index">Snowflake CLI</a>.
+</div>
