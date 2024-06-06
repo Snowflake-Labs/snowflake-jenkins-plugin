@@ -42,19 +42,20 @@ public class SnowflakeCLIInstaller extends ToolInstaller {
     }
     
     private String getInstallationScript() throws IOException, InterruptedException {
-        return Utils.getClassResourceContent(this.getClass(), "installationScript.sh");
+        return Utils.getClassResourceContent(this.getClass(), "InstallSnowflakeCLI.sh");
     }
     
     public FilePath performInstallation(ToolInstallation tool, Node node, TaskListener log) throws IOException, InterruptedException {
         FilePath dir = this.preferredLocation(tool, node);
+        FilePath script = null;
         FilePath binDirectory = dir.child("snow_cli_executable_bin");
         if(isUpToDate(binDirectory, this.version))
         {
             return binDirectory;
         }
         
-        FilePath script = dir.createTextTempFile("hudson", ".sh", this.getInstallationScript());
         try {
+            script = dir.createTextTempFile("installSnowflake", ".sh", this.getInstallationScript());
             if(binDirectory.child("snow_cli_executable_bin").exists())
             {
                 binDirectory.child("snow_cli_executable_bin").deleteRecursive();
@@ -66,10 +67,10 @@ public class SnowflakeCLIInstaller extends ToolInstaller {
             args.add(this.version);
             int r = node.createLauncher(log).launch().cmds(args).stdout(log).pwd(dir).join();
             if (r != 0) {
-                if(r == 1000)
+                if(r == 2)
                 {
-                    log.error(Messages.RequiredPythonThree());
-                    throw new InterruptedException(Messages.RequiredPythonThree());
+                    log.error(Messages.PythonRequired());
+                    throw new InterruptedException(Messages.PythonRequired());
                 }
                 else {
                     log.error(Messages.CommandReturnedStatus(r));
@@ -80,7 +81,9 @@ public class SnowflakeCLIInstaller extends ToolInstaller {
             binDirectory.child(SNOW_VERSION).write(this.version, "UTF-8");
             
         } finally {
-            script.delete();
+            if(script != null && script.exists()){
+                script.delete();
+            }
         }
         
         return binDirectory;

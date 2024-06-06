@@ -13,7 +13,7 @@ public class Utils {
     public static String getClassResourceContent(Class inputClass, String resourceName) throws IOException {
         String packageName = inputClass.getPackageName();
         String className = inputClass.getSimpleName();
-        String scriptPath = packageName.replace(".", "/") + "/" + className + resourceName;
+        String scriptPath = packageName.replace(".", "/") + "/" + className + "/" + resourceName;
         byte[] encodedFile = Jenkins.getInstanceOrNull().pluginManager.uberClassLoader.getResourceAsStream(scriptPath).readAllBytes();
         return new String(encodedFile, "UTF-8");
     }
