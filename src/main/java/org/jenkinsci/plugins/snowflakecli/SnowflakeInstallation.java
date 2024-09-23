@@ -71,7 +71,7 @@ public class SnowflakeInstallation extends ToolInstallation implements Environme
 
         @Override
         public List<? extends ToolInstaller> getDefaultInstallers() {
-            return Collections.singletonList(new SnowflakeCLIInstaller(null,""));
+            return Collections.singletonList(new SnowflakeCLIInstaller(null,"latest", "default"));
         }
 
         @Override
