@@ -26,35 +26,58 @@ Use the [`tools` directive](https://www.jenkins.io/doc/book/pipeline/syntax/#too
 
 ```groovy
 pipeline {
-  // Run on an agent where we want to use Snowflake CLI
-  agent any
+    // Run on an agent where we want to use Snowflake CLI
+    agent any
 
-  // Ensure the desired Snowflake CLI version is installed for all stages,
-  // using the name defined in the Global Tool Configuration
-  tools { snowflakecli 'latest' }
+    // Ensure the desired Snowflake CLI version is installed for all stages,
+    // using the name defined in the Global Tool Configuration
+    tools { snowflakecli 'latest' }
 
-  stages {
-    stage('Build') {
-      steps {
-        script {
-          // Use a wrap directive, set $class as SnowflakeCLIBuildWrapper and add the parameter for the path to the configuration file in your repository.
-          // This wrapper copies the information of the input file and stores it to a temporal config.toml file.
-          wrap([$class: 'SnowflakeCLIBuildWrapper', configFilePath: 'config.toml']) {
-              sh 'snow connection list'
-          }
-        }
-      }
+    environment {
+        SNOWFLAKE_CONNECTIONS_MYCONNECTION_ACCOUNT = credentials('snowflake-account')
+        SNOWFLAKE_CONNECTIONS_MYCONNECTION_AUTHENTICATOR = 'SNOWFLAKE_JWT'
+        SNOWFLAKE_CONNECTIONS_MYCONNECTION_PRIVATE_KEY_RAW = credentials('snowflake-private-key-raw')
     }
-  }
+
+    stages {
+        stage('Build') {
+            steps {
+                script {
+                    // You can define the config.toml file in your Git repository and access it by checking out the code.
+                    // Or you can use the following cat command as shown below to define it in the pipeline:
+sh '''
+cat <<EOF >> config.toml 
+default_connection_name = "myconnection" 
+  
+[connections] 
+[connections.myconnection]
+user = "ADMIN"
+EOF
+'''
+                    // Optional WithCredentials wrapper to define a private key passphrase if private key is encrypted.
+                    withCredentials([string(credentialsId: 'private_key_passphrase', variable: 'PRIVATE_KEY_PASSPHRASE')]) {
+                        // Use a wrap directive, set $class as SnowflakeCLIBuildWrapper and add the parameter for the path to the configuration file in your repository.
+                        // This wrapper copies the information of the input file and stores it to a temporal config.toml file.
+                        wrap([$class: 'SnowflakeCLIBuildWrapper', configFilePath: 'config.toml']) {
+                            sh 'snow connection list'
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
 ```
 
+
 #### Scripted Pipeline
+Similar as previous declarative pipeline, but it requires to set the PATH variable to snow executable.
 
 ```groovy
 node {
     // Ensure the desired Snowflake CLI version is installed for all stages,
     // using the name defined in the Global Tool Configuration
-    def root = tool type: 'snowflakecli', name: '2.4.0'
+    def root = tool type: 'snowflakecli', name: 'latest'
 
     // Manually set the PATH variable to the snow executable.
     withEnv(["PATH+SNOWFLAKECLI=${root}"]) {
