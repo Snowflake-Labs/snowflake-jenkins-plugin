@@ -15,19 +15,21 @@
  * limitations under the License.
  */
 
-package org.jenkinsci.plugins.snowflakecli.SnowflakeBuildWrapper
-f = namespace('/lib/form')
+package org.jenkinsci.plugins.snowflakecli;
 
-f.block() {
-    f.div(style: "margin: 0px 0px") {
-        f.table(style: "width: 100%") {
-            f.entry(field: 'version', title: _('Snowflake CLI version'), description: 'Snowflake CLI version to be installed.') {
-                f.textbox();
-            }
-            
-            f.entry(field: 'pythonVersion', title: _('Python version'), description: 'Snowflake CLI requires python 3.10 or higher. Example inputs: default, 3.10, 3.11, etc.') {
-                f.textbox();
-            }
-        }
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.matchesPattern;
+
+import org.junit.Test;
+
+import java.util.regex.Pattern;
+
+public class LatestVersionPackageTest {
+    
+    @Test
+    public void getLatestSnowflakeCliVersion() throws Exception {
+        Pattern pattern = Pattern.compile(Utils.getVersionPattern(), Pattern.CASE_INSENSITIVE);
+        String version = Utils.getLatestSnowflakeCliVersion();
+        assertThat(version, matchesPattern(pattern));
     }
 }

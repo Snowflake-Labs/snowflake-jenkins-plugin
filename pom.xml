@@ -11,7 +11,7 @@
 
   <groupId>io.jenkins.plugins</groupId>
   <artifactId>ConfigureSnowflakeCLI</artifactId>
-  <version>1.0.0-alpha</version>
+  <version>1.1.0</version>
   <packaging>hpi</packaging>
 
   <name>Snowflake CLI Plugin</name>
@@ -54,17 +54,8 @@
   </dependencyManagement>
   <dependencies>
     <dependency>
-      <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>structs</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.jenkins-ci.plugins.workflow</groupId>
       <artifactId>workflow-basic-steps</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.plugins.workflow</groupId>
-      <artifactId>workflow-cps</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -72,10 +63,30 @@
       <artifactId>workflow-durable-task-step</artifactId>
       <scope>test</scope>
     </dependency>
-    <dependency>
+  <dependency>
       <groupId>org.jenkins-ci.plugins.workflow</groupId>
-      <artifactId>workflow-job</artifactId>
+      <artifactId>workflow-cps</artifactId>
       <scope>test</scope>
+  </dependency>
+    <dependency>
+    <groupId>org.jenkins-ci.plugins.workflow</groupId>
+    <artifactId>workflow-job</artifactId>
+    <scope>test</scope>
+</dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>structs</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.json</groupId>
+      <artifactId>json</artifactId>
+      <version>20240303</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpclient</artifactId>
+      <version>4.5.14</version>
+      <scope>compile</scope>
     </dependency>
   </dependencies>
 

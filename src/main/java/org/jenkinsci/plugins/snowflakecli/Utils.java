@@ -19,12 +19,34 @@ package org.jenkinsci.plugins.snowflakecli;
 
 import hudson.FilePath;
 import jenkins.model.Jenkins;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
+import org.json.JSONObject;
 
 import java.io.IOException;
+import java.net.URL;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Utils {
     public static String[] getCommandCall(FilePath script) {
         return new String[]{"sh", "-e", script.getRemote()};
+    }
+    
+    public static final String VERSION_PATTERN = "(?:[\\d\\.]+[\\w-_]*\\d*)";
+    public static final String LATEST = "latest";
+    
+    
+    public static String getVersionPatternWithLatest(){
+        return "^(?:"+ Utils.VERSION_PATTERN+"|"+ LATEST +")$";
+    }
+    
+    
+    public static String getVersionPattern(){
+        return "^" + Utils.VERSION_PATTERN + "$";
     }
     
     public static String getClassResourceContent(Class inputClass, String resourceName) throws IOException {
@@ -33,5 +55,31 @@ public class Utils {
         String scriptPath = packageName.replace(".", "/") + "/" + className + "/" + resourceName;
         byte[] encodedFile = Jenkins.getInstanceOrNull().pluginManager.uberClassLoader.getResourceAsStream(scriptPath).readAllBytes();
         return new String(encodedFile, "UTF-8");
+    }
+    
+    public static String getLatestSnowflakeCliVersion() throws IOException {
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            HttpGet request = new HttpGet("https://pypi.org/pypi/snowflake-cli-labs/json");
+            try (CloseableHttpResponse response = httpClient.execute(request)) {
+                int statusCode = response.getStatusLine().getStatusCode();
+                if (statusCode != 200) {
+                    throw new IOException(EntityUtils.toString(response.getEntity()));
+                }
+                String responseBody = EntityUtils.toString(response.getEntity());
+                JSONObject jsonResponse = new JSONObject(responseBody);
+                JSONObject info = jsonResponse.getJSONObject("info");
+                URL url = new URL(info.getString("release_url"));
+                String path = url.getPath();
+                String[] pathParts = path.split("/");
+                String lastPart = pathParts[pathParts.length - 1];
+                
+                Pattern pattern = Pattern.compile(Utils.getVersionPattern(), Pattern.CASE_INSENSITIVE);
+                Matcher matcher = pattern.matcher(lastPart);
+                if(!matcher.matches()) {
+                    throw new IOException(Messages.FailedToRetrieveSnowflakeCLI());
+                }
+                return lastPart;
+            }
+        }
     }
 }
