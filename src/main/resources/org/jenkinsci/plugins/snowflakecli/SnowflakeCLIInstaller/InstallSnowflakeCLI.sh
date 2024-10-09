@@ -39,4 +39,4 @@ pip install pipx --force
 export PIPX_HOME="$venv_folder_name"
 export PIPX_BIN_DIR="$venv_folder_name"
 export PATH=$PIPX_BIN_DIR:$PATH
-eval "$python_command -m pipx install snowflake-cli-labs$version --force"
+eval "$python_command -m pipx install snowflake-cli$version --force"

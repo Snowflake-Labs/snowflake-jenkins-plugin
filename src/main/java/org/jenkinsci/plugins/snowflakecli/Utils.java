@@ -59,7 +59,7 @@ public class Utils {
     
     public static String getLatestSnowflakeCliVersion() throws IOException {
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-            HttpGet request = new HttpGet("https://pypi.org/pypi/snowflake-cli-labs/json");
+            HttpGet request = new HttpGet("https://pypi.org/pypi/snowflake-cli/json");
             try (CloseableHttpResponse response = httpClient.execute(request)) {
                 int statusCode = response.getStatusLine().getStatusCode();
                 if (statusCode != 200) {
